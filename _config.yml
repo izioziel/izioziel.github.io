@@ -25,12 +25,6 @@ rss: rss
 kramdown:
   syntax_highlighter_opts:
     disable: true
-    
-header_pages:
-  - resume.html
-  - archive.html
-  - books.md
-  - bookmarks.md
   
 plugins:
   - jekyll-feed
