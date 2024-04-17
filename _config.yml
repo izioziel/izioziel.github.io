@@ -1,0 +1,17 @@
+# PENGGUNAAN:
+# -----------------------------------------------------------------------------
+# - Instalasi gem yang diperlukan
+#   $ bundle
+#
+# - Jalankan Jekyll server
+#   $ bundle exec jekyll s
+# -----------------------------------------------------------------------------
+
+title: 'gitLMYD'
+
+defaults:
+  -
+    scope:
+      path: 'README.md'
+    values:
+      permalink: 'index.html'
