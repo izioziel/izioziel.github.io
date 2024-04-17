@@ -1,4 +1,5 @@
 ---
+layout: post
 title: Blog Post Title From First Header
 description: This is just Text
 tags: Blogging
