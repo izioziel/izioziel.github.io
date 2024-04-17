@@ -8,15 +8,6 @@
     <div id="page-ctn" contenteditable="false">
       <main id="content" class="markdown-body" role="main">
         {{ content }}
-        <div class="share-links">
-          {% include sharelinks.html %}
-        </div>
-      
-        <div class="post-content e-content" itemprop="articleBody">
-          {% include navlinks.html %}
-        </div>
-      
-        <a class="u-url" href="{{ page.url | relative_url }}" hidden></a>
       </main>
     </div>
   </body>
