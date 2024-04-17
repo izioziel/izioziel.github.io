@@ -2,7 +2,7 @@
 layout: post
 title: azis lamayuda
 description: This is just Text
-tags: Blogging
+tags: Meme
 ---
 
 ## azis lamayuda
