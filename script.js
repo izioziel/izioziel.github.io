@@ -22,6 +22,17 @@ location.reload();
 }, 1000);
 }
 
+function showZisAlert(message) {
+const alertElement = $('#zisalert');
+alertElement.text(message);
+alertElement.addClass('show');
+
+setTimeout(() => {
+alertElement.removeClass('show');
+}, 1000);
+}
+
+
 // Initialize Firebase
 if (!firebase.apps.length) {
 firebase.initializeApp(firebaseConfig);
@@ -150,7 +161,7 @@ customerTable.row(row).remove().draw(false); // Remove the row from DataTable
 console.log('Customer deleted successfully:', customerId);
 // Update total customer count
 updateCustomerCount();
-showAlert('Data berhasil dihapus');
+showZisAlert('Data berhasil dihapus');
 }).catch(error => {
 console.error('Error deleting customer:', error);
 });
