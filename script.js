@@ -26,10 +26,9 @@ function showZisAlert(message) {
 const alertElement = $('#zisalert');
 alertElement.text(message);
 alertElement.addClass('show');
-
 setTimeout(() => {
 alertElement.removeClass('show');
-}, 1000);
+}, 500);
 }
 
 
