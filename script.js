@@ -26,11 +26,11 @@ function showZisAlert(message) {
 const alertElement = $('#zisalert');
 alertElement.text(message);
 alertElement.addClass('show');
+
 setTimeout(() => {
 alertElement.removeClass('show');
-}, 500);
+}, 1000);
 }
-
 
 // Initialize Firebase
 if (!firebase.apps.length) {
@@ -40,8 +40,10 @@ firebase.initializeApp(firebaseConfig);
 // Get a reference to the database service
 const database = firebase.database();
 
-const customerForm = $('#customerForm');
-const customerTable = $('#customerTable').DataTable();
+let customers = [];
+let currentPage = 1;
+const itemsPerPage = 6;
+const maxPageButtons = 5; // Maximum number of page buttons to display
 
 // Spinner
 function showSpinner() {
@@ -50,31 +52,23 @@ $('#spinner').show();
 
 function hideSpinner() {
 $('#spinner').hide();
+$('.pagination').removeClass('d-none');
 }
 
 // Load customers from Firebase
 function loadCustomers() {
 showSpinner();
 database.ref('customers').once('value').then(snapshot => {
-const customers = snapshot.val();
-if (customers) {
-customerTable.clear(); // Clear existing data
-const customerKeys = Object.keys(customers);
-customerKeys.forEach(key => {
-const customer = customers[key];
-customerTable.row.add([
-customer.title, // Add title column here
-customer.name,
-customer.phone,
-`<a target="_blank" href="https://api.whatsapp.com/send?phone=${formatPhoneNumber(customer.whatsapp).replace('+62', '62')}">${customer.whatsapp}</a>`,
-`<a target="_blank" href="mailto:${customer.email}">${customer.email}</a>`,
-customer.company,
-`<button class="btn btn-warning btn-sm edit-btn" data-id="${key}">Edit</button>
- <button class="btn btn-danger btn-sm delete-btn" data-id="${key}">Delete</button>`
-]).draw(false);
+const data = snapshot.val();
+if (data) {
+customers = Object.keys(data).map(key => {
+return { id: key, ...data[key] };
 });
+renderPage(currentPage);
+setupPagination();
+updateUniqueCompanyCount();
 // Update total customer count
-$('#totalCustomer').text(customerKeys.length);
+$('#totalCustomer').text(customers.length);
 }
 hideSpinner();
 }).catch(error => {
@@ -83,12 +77,128 @@ hideSpinner();
 });
 }
 
+// Function to create card from data
+function createCard(customer) {
+let iconClass;
+if (customer.title === 'BAPAK') {
+iconClass = 'ri-user-4-fill';
+} else if (customer.title === 'IBU') {
+iconClass = 'ri-user-6-fill';
+}
+
+return `
+<div class="col-md-4 mb-4 card-item">
+<div class="card position-relative">
+<div class="card-body">
+<h5 class="card-title">${customer.title} ${customer.name}</h5>
+<p class="card-text">
+<i class="ri-phone-line"></i> : ${customer.phone}<br>
+<i class="ri-whatsapp-line"></i> : <a target="_blank" href="https://api.whatsapp.com/send?phone=${formatPhoneNumber(customer.whatsapp).replace('+62', '62')}">${customer.whatsapp}</a><br>
+<i class="ri-mail-line"></i> : <a target="_blank" href="mailto:${customer.email}">${customer.email}</a><br>
+<i class="ri-hotel-line"></i> :  ${customer.company}
+</p>
+<button class="btn btn-warning btn-sm edit-btn" data-id="${customer.id}"><i class="ri-edit-2-line"></i> Edit</button>
+<button class="btn btn-danger btn-sm delete-btn" data-id="${customer.id}"><i class="ri-delete-bin-6-line"></i>  Delete</button>
+</div>
+<span class='display-1 position-absolute bottom-0 end-0 me-2 mb-2'><i class="${iconClass} opacity-25"></i></span>
+</div>
+</div>
+`;
+}
+
+// Render current page
+function renderPage(page) {
+$('#card-container').empty();
+const start = (page - 1) * itemsPerPage;
+const end = page * itemsPerPage;
+const paginatedItems = customers.slice(start, end);
+paginatedItems.forEach(customer => {
+$('#card-container').append(createCard(customer));
+});
+}
+
+// Setup pagination
+function setupPagination() {
+const pageCount = Math.ceil(customers.length / itemsPerPage);
+$('.pagination').empty();
+$('.pagination').append(`<li class="page-item"><a class="page-link" href="#" id="prev-page">&laquo; Prev</a></li>`);
+
+let startPage, endPage;
+if (pageCount <= maxPageButtons) {
+startPage = 1;
+endPage = pageCount;
+} else {
+const maxPagesBeforeCurrentPage = Math.floor(maxPageButtons / 2);
+const maxPagesAfterCurrentPage = Math.ceil(maxPageButtons / 2) - 1;
+if (currentPage <= maxPagesBeforeCurrentPage) {
+startPage = 1;
+endPage = maxPageButtons;
+} else if (currentPage + maxPagesAfterCurrentPage >= pageCount) {
+startPage = pageCount - maxPageButtons + 1;
+endPage = pageCount;
+} else {
+startPage = currentPage - maxPagesBeforeCurrentPage;
+endPage = currentPage + maxPagesAfterCurrentPage;
+}
+}
+
+if (startPage > 1) {
+$('.pagination').append(`<li class="page-item"><a class="page-link" href="#">1</a></li>`);
+if (startPage > 2) {
+$('.pagination').append(`<li class="page-item"><span class="page-link">...</span></li>`);
+}
+}
+
+for (let i = startPage; i <= endPage; i++) {
+$('.pagination').append(`<li class="page-item ${i === currentPage ? 'active' : ''}"><a class="page-link page-number" href="#">${i}</a></li>`);
+}
+
+if (endPage < pageCount) {
+if (endPage < pageCount - 1) {
+$('.pagination').append(`<li class="page-item"><span class="page-link">...</span></li>`);
+}
+$('.pagination').append(`<li class="page-item"><a class="page-link" href="#">${pageCount}</a></li>`);
+}
+
+$('.pagination').append(`<li class="page-item"><a class="page-link" href="#" id="next-page">Next &raquo;</a></li>`);
+
+updatePageButtons(currentPage);
+
+$('.pagination .page-link').on('click', function(e) {
+e.preventDefault();
+if ($(this).attr('id') === 'prev-page') {
+if (currentPage > 1) {
+currentPage--;
+}
+} else if ($(this).attr('id') === 'next-page') {
+if (currentPage < pageCount) {
+currentPage++;
+}
+} else {
+currentPage = parseInt($(this).text());
+}
+renderPage(currentPage);
+setupPagination();
+});
+}
+
+function updatePageButtons(page) {
+$('.page-item').removeClass('active');
+$(`.pagination .page-number:contains(${page})`).parent().addClass('active');
+}
+
+// Function to update unique company count
+function updateUniqueCompanyCount() {
+    const uniqueCompanies = [...new Set(customers.map(customer => customer.company))];
+    $('#totalUniqueCompanies').text(uniqueCompanies.length);
+}
+
 // Handle form submission
-customerForm.on('submit', function(event) {
+$('#customerForm').on('submit', function(event) {
 event.preventDefault();
 const customerId = $('#customerId').val();
 const customer = {
-title: $('input[name="title"]:checked').val(), // Add title field here
+title: $('input[name="title"]:checked').val(),
 name: $('#name').val().toUpperCase(),
 phone: formatPhoneNumber($('#phone').val()),
 whatsapp: formatPhoneNumber($('#whatsapp').val()),
@@ -102,7 +212,7 @@ updateCustomer(customerId, customer);
 addCustomer(customer);
 }
 
-customerForm.trigger('reset');
+$('#customerForm').trigger('reset');
 $('#customerModal').modal('hide');
 });
 
@@ -110,20 +220,11 @@ $('#customerModal').modal('hide');
 function addCustomer(customer) {
 const newCustomerRef = database.ref('customers').push();
 newCustomerRef.set(customer).then(() => {
-customerTable.row.add([
-customer.title, // Add title column here
-customer.name,
-customer.phone,
-`<a target="_blank" href="https://api.whatsapp.com/send?phone=${formatPhoneNumber(customer.whatsapp).replace('+62', '62')}">${customer.whatsapp}</a>`,
-`<a target="_blank" href="mailto:${customer.email}">${customer.email}</a>`,
-customer.company,
-`<button class="btn btn-warning btn-sm edit-btn" data-id="${newCustomerRef.key}">Edit</button>
- <button class="btn btn-danger btn-sm delete-btn" data-id="${newCustomerRef.key}">Delete</button>`
-]).draw(false);
-console.log('Customer added successfully:', customer);
-// Update total customer count
-updateCustomerCount();
+customers.push({ id: newCustomerRef.key, ...customer });
+renderPage(currentPage);
+setupPagination();
 showAlert('Data berhasil ditambahkan');
+updateCustomerCount();
 }).catch(error => {
 console.error('Error adding customer:', error);
 });
@@ -132,18 +233,9 @@ console.error('Error adding customer:', error);
 // Update customer in Firebase
 function updateCustomer(customerId, customer) {
 database.ref('customers/' + customerId).set(customer).then(() => {
-const row = customerTable.row($(`button[data-id='${customerId}']`).closest('tr'));
-row.data([
-customer.title, // Add title column here
-customer.name,
-customer.phone,
-`<a target="_blank" href="https://api.whatsapp.com/send?phone=${formatPhoneNumber(customer.whatsapp).replace('+62', '62')}">${customer.whatsapp}</a>`,
-`<a target="_blank" href="mailto:${customer.email}">${customer.email}</a>`,
-customer.company,
-`<button class="btn btn-warning btn-sm edit-btn" data-id="${customerId}">Edit</button>
- <button class="btn btn-danger btn-sm delete-btn" data-id="${customerId}">Delete</button>`
-]).draw(false);
-console.log('Customer updated successfully:', customer);
+const index = customers.findIndex(c => c.id === customerId);
+customers[index] = { id: customerId, ...customer };
+renderPage(currentPage);
 showAlert('Data berhasil diedit');
 }).catch(error => {
 console.error('Error updating customer:', error);
@@ -151,14 +243,14 @@ console.error('Error updating customer:', error);
 }
 
 // Delete customer from Firebase
-$('#customerTable tbody').on('click', '.delete-btn', function() {
+$('#card-container').on('click', '.delete-btn', function() {
 const customerId = $(this).data('id');
-const row = $(this).closest('tr'); // Get the row element
+const card = $(this).closest('.col-md-4');
 
 database.ref('customers/' + customerId).remove().then(() => {
-customerTable.row(row).remove().draw(false); // Remove the row from DataTable
-console.log('Customer deleted successfully:', customerId);
-// Update total customer count
+customers = customers.filter(c => c.id !== customerId);
+renderPage(currentPage);
+setupPagination();
 updateCustomerCount();
 showZisAlert('Data berhasil dihapus');
 }).catch(error => {
@@ -167,20 +259,19 @@ console.error('Error deleting customer:', error);
 });
 
 // Edit customer
-$('#customerTable tbody').on('click', '.edit-btn', function() {
+$('#card-container').on('click', '.edit-btn', function() {
 const customerId = $(this).data('id');
 database.ref('customers/' + customerId).once('value').then(snapshot => {
 const customer = snapshot.val();
 if (customer) {
 $('#customerId').val(customerId);
-$(`input[name="title"][value="${customer.title}"]`).prop('checked', true); // Add title field here
+$(`input[name="title"][value="${customer.title}"]`).prop('checked', true);
 $('#name').val(customer.name);
 $('#phone').val(customer.phone);
 $('#whatsapp').val(customer.whatsapp);
 $('#email').val(customer.email);
 $('#company').val(customer.company);
 $('#customerModal').modal('show');
-console.log('Customer retrieved for edit:', customer);
 }
 }).catch(error => {
 console.error('Error retrieving customer:', error);
@@ -189,6 +280,40 @@ console.error('Error retrieving customer:', error);
 
 // Initial load
 loadCustomers();
+
+// Search functionality
+$('#searchInput').on('keyup', function() {
+const value = $(this).val().toLowerCase();
+if (value) {
+// Filter customers based on search value
+const filteredCustomers = customers.filter(customer => 
+customer.name.toLowerCase().includes(value) || 
+customer.phone.toLowerCase().includes(value) ||
+customer.whatsapp.toLowerCase().includes(value) ||
+customer.email.toLowerCase().includes(value) ||
+customer.company.toLowerCase().includes(value)
+);
+
+// Render filtered results
+$('#card-container').empty();
+if (filteredCustomers.length > 0) {
+filteredCustomers.forEach(customer => {
+$('#card-container').append(createCard(customer));
+});
+} else {
+$('#card-container').append('<div class="col-12"><p class="text-center">Tidak ada data</p></div>');
+}
+
+// Hide pagination during search
+$('.pagination').hide();
+} else {
+// If search input is empty, show all data with pagination
+renderPage(currentPage);
+setupPagination();
+$('.pagination').show();
+}
+});
+
 
 // Export to Excel
 $('#exportButton').on('click', function() {
@@ -201,6 +326,7 @@ const workbook = XLSX.utils.book_new();
 XLSX.utils.book_append_sheet(workbook, worksheet, "Customers");
 
 XLSX.writeFile(workbook, "customers.xlsx");
+showAlert('Data berhasil diexport');
 }
 }).catch(error => {
 console.error('Error exporting data:', error);
@@ -223,10 +349,9 @@ return "PT. " + companyName;
 // Function to format phone number with +62
 function formatPhoneNumber(phoneNumber) {
 if (typeof phoneNumber !== 'string') {
-phoneNumber = phoneNumber.toString(); // Convert to string if not already
-console.warn("Phone number converted to string:", phoneNumber);
+phoneNumber = phoneNumber.toString();
 }
-
+phoneNumber = phoneNumber.replace(/-/g, '');
 phoneNumber = phoneNumber.trim();
 if (phoneNumber.startsWith("0")) {
 return "+62" + phoneNumber.slice(1);
@@ -244,7 +369,6 @@ $('#importFile').click();
 $('#importFile').on('change', function(event) {
 const file = event.target.files[0];
 if (!file) {
-console.log("No file selected.");
 return;
 }
 
@@ -257,29 +381,22 @@ const sheetName = workbook.SheetNames[0];
 const worksheet = workbook.Sheets[sheetName];
 const json = XLSX.utils.sheet_to_json(worksheet);
 
-console.log("Imported Data:", json);
-
 if (!Array.isArray(json) || json.length === 0) {
-console.log("No data found in the sheet.");
 return;
 }
 
-// Count the number of data entries
-const dataCount = json.length;
-
 json.forEach(rawCustomer => {
 const customer = {
-title: rawCustomer.title ? rawCustomer.title.toUpperCase() : '', // Add title field here
+title: rawCustomer.title ? rawCustomer.title.toUpperCase() : '',
 name: rawCustomer.name ? rawCustomer.name.toUpperCase() : '',
 phone: rawCustomer.phone ? formatPhoneNumber(rawCustomer.phone) : '',
 whatsapp: rawCustomer.whatsapp ? formatPhoneNumber(rawCustomer.whatsapp) : '',
 email: rawCustomer.email ? rawCustomer.email : '',
 company: rawCustomer.company ? formatCompanyName(rawCustomer.company.toUpperCase()) : ''
 };
-console.log("Processed Customer:", customer);
 addCustomer(customer);
 });
-showAlert(`${dataCount} data berhasil diimpor!`);
+showAlert(`${json.length} data berhasil diimpor!`);
 } catch (error) {
 console.error("Error processing file:", error);
 }
@@ -291,7 +408,7 @@ $('#addDataButton').on('click', function() {
 $('#customerModal').modal('show');
 setTimeout(function() {
 $('#name').focus();
-}, 500); // Menambahkan penundaan 500ms sebelum menetapkan fokus
+}, 500);
 });
 
 // Function to update total customer count
