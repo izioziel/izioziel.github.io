@@ -109,83 +109,83 @@ return `
 
 // Render current page
 function renderPage(page) {
-$('#card-container').empty();
-const start = (page - 1) * itemsPerPage;
-const end = page * itemsPerPage;
-const paginatedItems = customers.slice(start, end);
-paginatedItems.forEach(customer => {
-$('#card-container').append(createCard(customer));
-});
+    $('#card-container').empty();
+    const start = (page - 1) * itemsPerPage;
+    const end = page * itemsPerPage;
+    const paginatedItems = customers.slice(start, end);
+    paginatedItems.forEach(customer => {
+        $('#card-container').append(createCard(customer));
+    });
 }
 
 // Setup pagination
 function setupPagination() {
-const pageCount = Math.ceil(customers.length / itemsPerPage);
-$('.pagination').empty();
-$('.pagination').append(`<li class="page-item"><a class="page-link" href="#" id="prev-page">&laquo;</a></li>`);
+    const pageCount = Math.ceil(customers.length / itemsPerPage);
+    $('.pagination').empty();
+    $('.pagination').append(`<li class="page-item"><a class="page-link" href="#" id="prev-page">&laquo;</a></li>`);
 
-let startPage, endPage;
-if (pageCount <= maxPageButtons) {
-startPage = 1;
-endPage = pageCount;
-} else {
-const maxPagesBeforeCurrentPage = Math.floor(maxPageButtons / 2);
-const maxPagesAfterCurrentPage = Math.ceil(maxPageButtons / 2) - 1;
-if (currentPage <= maxPagesBeforeCurrentPage) {
-startPage = 1;
-endPage = maxPageButtons;
-} else if (currentPage + maxPagesAfterCurrentPage >= pageCount) {
-startPage = pageCount - maxPageButtons + 1;
-endPage = pageCount;
-} else {
-startPage = currentPage - maxPagesBeforeCurrentPage;
-endPage = currentPage + maxPagesAfterCurrentPage;
-}
-}
+    let startPage, endPage;
+    if (pageCount <= maxPageButtons) {
+        startPage = 1;
+        endPage = pageCount;
+    } else {
+        const maxPagesBeforeCurrentPage = Math.floor(maxPageButtons / 2);
+        const maxPagesAfterCurrentPage = Math.ceil(maxPageButtons / 2) - 1;
+        if (currentPage <= maxPagesBeforeCurrentPage) {
+            startPage = 1;
+            endPage = maxPageButtons;
+        } else if (currentPage + maxPagesAfterCurrentPage >= pageCount) {
+            startPage = pageCount - maxPageButtons + 1;
+            endPage = pageCount;
+        } else {
+            startPage = currentPage - maxPagesBeforeCurrentPage;
+            endPage = currentPage + maxPagesAfterCurrentPage;
+        }
+    }
 
-if (startPage > 1) {
-$('.pagination').append(`<li class="page-item"><a class="page-link" href="#">1</a></li>`);
-if (startPage > 2) {
-$('.pagination').append(`<li class="page-item"><span class="page-link">...</span></li>`);
-}
-}
+    if (startPage > 1) {
+        $('.pagination').append(`<li class="page-item"><a class="page-link" href="#">1</a></li>`);
+        if (startPage > 2) {
+            $('.pagination').append(`<li class="page-item"><span class="page-link disabled">...</span></li>`);
+        }
+    }
 
-for (let i = startPage; i <= endPage; i++) {
-$('.pagination').append(`<li class="page-item ${i === currentPage ? 'active' : ''}"><a class="page-link page-number" href="#">${i}</a></li>`);
-}
+    for (let i = startPage; i <= endPage; i++) {
+        $('.pagination').append(`<li class="page-item ${i === currentPage ? 'active' : ''}"><a class="page-link page-number" href="#">${i}</a></li>`);
+    }
 
-if (endPage < pageCount) {
-if (endPage < pageCount - 1) {
-$('.pagination').append(`<li class="page-item"><span class="page-link">...</span></li>`);
-}
-$('.pagination').append(`<li class="page-item"><a class="page-link" href="#">${pageCount}</a></li>`);
-}
+    if (endPage < pageCount) {
+        if (endPage < pageCount - 1) {
+            $('.pagination').append(`<li class="page-item"><span class="page-link disabled">...</span></li>`);
+        }
+        $('.pagination').append(`<li class="page-item"><a class="page-link" href="#">${pageCount}</a></li>`);
+    }
 
-$('.pagination').append(`<li class="page-item"><a class="page-link" href="#" id="next-page">&raquo;</a></li>`);
+    $('.pagination').append(`<li class="page-item"><a class="page-link" href="#" id="next-page">&raquo;</a></li>`);
 
-updatePageButtons(currentPage);
+    updatePageButtons(currentPage);
 
-$('.pagination .page-link').on('click', function(e) {
-e.preventDefault();
-if ($(this).attr('id') === 'prev-page') {
-if (currentPage > 1) {
-currentPage--;
-}
-} else if ($(this).attr('id') === 'next-page') {
-if (currentPage < pageCount) {
-currentPage++;
-}
-} else {
-currentPage = parseInt($(this).text());
-}
-renderPage(currentPage);
-setupPagination();
-});
+    $('.pagination .page-link').on('click', function(e) {
+        e.preventDefault();
+        if ($(this).attr('id') === 'prev-page') {
+            if (currentPage > 1) {
+                currentPage--;
+            }
+        } else if ($(this).attr('id') === 'next-page') {
+            if (currentPage < pageCount) {
+                currentPage++;
+            }
+        } else if (!$(this).hasClass('disabled')) {
+            currentPage = parseInt($(this).text());
+        }
+        renderPage(currentPage);
+        setupPagination();
+    });
 }
 
 function updatePageButtons(page) {
-$('.page-item').removeClass('active');
-$(`.pagination .page-number:contains(${page})`).parent().addClass('active');
+    $('.page-item').removeClass('active');
+    $(`.pagination .page-number:contains(${page})`).parent().addClass('active');
 }
 
 // Function to update unique company count
