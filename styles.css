@@ -10,3 +10,7 @@ body a, body a:link{text-decoration: none;}
 .card-item{display:flex;flex-direction:column;}
 .card{flex:1;display:flex;flex-direction:column;}
 .kursor {cursor: pointer;text-decoration: none;}
+.search-container{position:relative;display:flex;align-items:center;}
+#searchInput{width:100%;padding-right:30px;}
+.clear-icon{position:absolute;right:10px;cursor:pointer;font-size:18px;display:none;}
+#searchInput:not(:placeholder-shown) + .clear-icon{display:block;}
