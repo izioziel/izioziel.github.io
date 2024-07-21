@@ -43,7 +43,7 @@ const database = firebase.database();
 let customers = [];
 let currentPage = 1;
 const itemsPerPage = 6;
-const maxPageButtons = 5; // Maximum number of page buttons to display
+const maxPageButtons = 3; // Maximum number of page buttons to display
 
 // Spinner
 function showSpinner() {
