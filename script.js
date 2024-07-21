@@ -53,6 +53,7 @@ $('#spinner').show();
 function hideSpinner() {
 $('#spinner').hide();
 $('.pagination').removeClass('d-none');
+$('.bawah').removeClass('d-none');
 }
 
 // Load customers from Firebase
