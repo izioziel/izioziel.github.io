@@ -295,6 +295,23 @@ customer.email.toLowerCase().includes(value) ||
 customer.company.toLowerCase().includes(value)
 );
 
+$('#searchInput').on('input', function() {
+var $clearIcon = $('.clear-icon');
+if ($(this).val()) {
+$clearIcon.show();
+} else {
+$clearIcon.hide();
+}
+});
+
+$('.clear-icon').on('click', function() {
+$('#searchInput').val('').focus();
+$(this).hide();
+renderPage(currentPage);
+setupPagination();
+$('.pagination').show();
+});
+
 // Render filtered results
 $('#card-container').empty();
 if (filteredCustomers.length > 0) {
