@@ -122,7 +122,7 @@ $('#card-container').append(createCard(customer));
 function setupPagination() {
 const pageCount = Math.ceil(customers.length / itemsPerPage);
 $('.pagination').empty();
-$('.pagination').append(`<li class="page-item"><a class="page-link" href="#" id="prev-page">&laquo; Prev</a></li>`);
+$('.pagination').append(`<li class="page-item"><a class="page-link" href="#" id="prev-page">&laquo;</a></li>`);
 
 let startPage, endPage;
 if (pageCount <= maxPageButtons) {
@@ -161,7 +161,7 @@ $('.pagination').append(`<li class="page-item"><span class="page-link">...</span
 $('.pagination').append(`<li class="page-item"><a class="page-link" href="#">${pageCount}</a></li>`);
 }
 
-$('.pagination').append(`<li class="page-item"><a class="page-link" href="#" id="next-page">Next &raquo;</a></li>`);
+$('.pagination').append(`<li class="page-item"><a class="page-link" href="#" id="next-page">&raquo;</a></li>`);
 
 updatePageButtons(currentPage);
 
