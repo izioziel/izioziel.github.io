@@ -237,7 +237,7 @@ database.ref('customers/' + customerId).set(customer).then(() => {
 const index = customers.findIndex(c => c.id === customerId);
 customers[index] = { id: customerId, ...customer };
 renderPage(currentPage);
-showAlert('Data berhasil diedit');
+showZisAlert('Data berhasil diedit');
 }).catch(error => {
 console.error('Error updating customer:', error);
 });
