@@ -93,7 +93,7 @@ return `
 <div class="card-body">
 <h5 class="card-title">${customer.title} ${customer.name}</h5>
 <p class="card-text">
-<i class="ri-phone-line"></i> : ${customer.phone}<br>
+<i class="ri-building-2-line"></i> : ${customer.phone}<br>
 <i class="ri-whatsapp-line"></i> : <a target="_blank" href="https://api.whatsapp.com/send?phone=${formatPhoneNumber(customer.whatsapp).replace('+62', '62')}">${customer.whatsapp}</a><br>
 <i class="ri-mail-line"></i> : <a target="_blank" href="mailto:${customer.email}">${customer.email}</a><br>
 <i class="ri-hotel-line"></i> :  ${customer.company}
