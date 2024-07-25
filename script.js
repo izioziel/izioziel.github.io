@@ -201,7 +201,7 @@ const customerId = $('#customerId').val();
 const customer = {
 title: $('input[name="title"]:checked').val(),
 name: $('#name').val().toUpperCase(),
-phone: formatPhoneNumber($('#phone').val()),
+phone: $('#phone').val().toUpperCase(),
 whatsapp: formatPhoneNumber($('#whatsapp').val()),
 email: $('#email').val(),
 company: formatCompanyName($('#company').val().toUpperCase())
@@ -407,7 +407,7 @@ json.forEach(rawCustomer => {
 const customer = {
 title: rawCustomer.title ? rawCustomer.title.toUpperCase() : '',
 name: rawCustomer.name ? rawCustomer.name.toUpperCase() : '',
-phone: rawCustomer.phone ? formatPhoneNumber(rawCustomer.phone) : '',
+phone: rawCustomer.phone ? rawCustomer.phone.toUpperCase() : '',
 whatsapp: rawCustomer.whatsapp ? formatPhoneNumber(rawCustomer.whatsapp) : '',
 email: rawCustomer.email ? rawCustomer.email : '',
 company: rawCustomer.company ? formatCompanyName(rawCustomer.company.toUpperCase()) : ''
